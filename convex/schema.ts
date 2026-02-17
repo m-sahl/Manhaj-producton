@@ -23,5 +23,7 @@ export default defineSchema({
     }).index("by_memberId", ["memberId"]),
     admins: defineTable({
         passwordHash: v.string(),
+        name: v.optional(v.string()),
+        username: v.optional(v.string()),
     }),
 });

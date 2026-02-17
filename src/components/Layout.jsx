@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, FileText, ArrowLeft, Settings } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function Layout() {
     const navigate = useNavigate();
@@ -15,6 +15,22 @@ export default function Layout() {
         }
     }, []);
 
+
+    const [adminName, setAdminName] = useState(localStorage.getItem('admin_name') || 'Admin');
+
+    useEffect(() => {
+        const handleStorageChange = () => {
+            setAdminName(localStorage.getItem('admin_name') || 'Admin');
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        window.addEventListener('adminProfileChanged', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('adminProfileChanged', handleStorageChange);
+        };
+    }, []);
 
     const getPageTitle = () => {
         const path = location.pathname;
@@ -41,11 +57,20 @@ export default function Layout() {
                                 <ArrowLeft size={20} />
                             </button>
                         ) : (
-                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-black text-white text-xs shadow-lg shadow-blue-500/20">M</div>
+                            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-black text-white text-xs shadow-lg shadow-blue-500/20">
+                                {adminName.charAt(0).toUpperCase()}
+                            </div>
                         )}
-                        <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white capitalize">
-                            {getPageTitle()}
-                        </h1>
+                        <div>
+                            <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white capitalize leading-tight">
+                                {getPageTitle()}
+                            </h1>
+                            {!showBackButton && (
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                                    Hello, {adminName}
+                                </p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </header>

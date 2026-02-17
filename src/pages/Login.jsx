@@ -6,6 +6,8 @@ import { api } from "../../convex/_generated/api";
 
 export default function Login() {
     const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
+    const [username, setUsername] = useState('');
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
@@ -19,35 +21,49 @@ export default function Login() {
         setError('');
 
         try {
-            // Wait for query to load if needed
             if (isInitialized === undefined) return;
 
-            // Auto-init if no admin exists (first time run)
             if (!isInitialized) {
-                if (password.length < 4) {
-                    setError('Set a password of at least 4 characters');
-                    return;
-                }
-                await initMutation({ password });
+                if (!name.trim()) { setError('Please enter your name'); return; }
+                if (!username.trim()) { setError('Please choose a username'); return; }
+                if (password.length < 4) { setError('Set a password of at least 4 characters'); return; }
+
+                await initMutation({ username, password, name });
                 localStorage.setItem('auth_token', 'valid_token');
+                localStorage.setItem('admin_name', name);
+                localStorage.setItem('admin_username', username);
                 if (!localStorage.getItem('theme')) localStorage.setItem('theme', 'dark');
                 navigate('/');
                 return;
             }
 
-            const result = await verifyMutation({ password });
+            if (!username.trim()) { setError('Please enter username'); return; }
+
+            const result = await verifyMutation({ username, password });
             if (result.success) {
                 localStorage.setItem('auth_token', 'valid_token');
+                localStorage.setItem('admin_name', result.name || "Admin");
+                localStorage.setItem('admin_username', username); // Store for settings
+                localStorage.setItem('last_login', new Date().toISOString());
+
+                const ua = navigator.userAgent;
+                let device = "Unknown Device";
+                if (/android/i.test(ua)) device = "Android Device";
+                else if (/iPhone|iPad|iPod/i.test(ua)) device = "iOS Device";
+                else if (/windows/i.test(ua)) device = "Windows PC";
+                else if (/mac/i.test(ua)) device = "Mac Computer";
+                localStorage.setItem('login_device', device);
+
                 if (!localStorage.getItem('theme')) localStorage.setItem('theme', 'dark');
                 navigate('/');
             } else {
-                setError(result.message || 'Invalid admin password');
-                setPassword(''); // Remove entered password on failure
+                setError(result.message || 'Invalid username or password');
+                setPassword('');
             }
         } catch (err) {
-            setError('Connection error. Please try again.');
-            setPassword(''); // Remove entered password on failure
             console.error(err);
+            const errorMessage = err.data?.message || err.message || 'Connection error. Please try again.';
+            setError(errorMessage);
         }
     };
 
@@ -59,19 +75,38 @@ export default function Login() {
                         Manhaj Admin
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 font-medium">
-                        {isInitialized === false ? 'Set Admin Password' : 'Enter secure access code'}
+                        {isInitialized === false ? 'Set Admin Profile' : 'Sign in to your account'}
                     </p>
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-6" autoComplete="off">
+                    {isInitialized === false && (
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Your Name (e.g. Administrator)"
+                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-12 py-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-center tracking-wide text-lg font-bold shadow-inner"
+                        />
+                    )}
+
+                    <input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Username"
+                        autoComplete="username"
+                        className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-12 py-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-center tracking-wide text-lg font-bold shadow-inner"
+                    />
+
                     <div className="relative group">
                         <input
                             type={showPassword ? "text" : "password"}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder={isInitialized === false ? "Choose New Password" : "Admin Password"}
-                            autoComplete="new-password"
-                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl pl-4 pr-12 py-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-center tracking-widest text-lg font-bold shadow-inner"
+                            placeholder={isInitialized === false ? "Choose Password" : "Password"}
+                            autoComplete="current-password"
+                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-12 py-4 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-center tracking-widest text-lg font-bold shadow-inner"
                         />
                         <button
                             type="button"
@@ -87,7 +122,7 @@ export default function Login() {
                         type="submit"
                         className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-500/30 dark:shadow-blue-900/40 transition-all transform active:scale-95 text-lg"
                     >
-                        {isInitialized === false ? 'Set Password & Login' : 'Unlock Dashboard'}
+                        {isInitialized === false ? 'Create Account' : 'Sign In'}
                     </button>
                 </form>
             </div>

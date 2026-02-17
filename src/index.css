@@ -56,6 +56,22 @@
       opacity: 1;
     }
   }
+
+  @keyframes toastSlideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-toast-slide-in {
+    animation: toastSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
 }
 
 /* Custom Scrollbar */

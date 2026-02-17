@@ -1,15 +1,75 @@
 import { useState, useEffect } from 'react';
-import { Moon, Sun, Download, Upload, Trash2, Database, ShieldAlert, ArrowLeft, KeyRound, CloudUpload, Eye, EyeOff } from 'lucide-react';
+import { Moon, Sun, KeyRound, Eye, EyeOff, ShieldCheck, Clock, Monitor, Timer, X, User, Pencil, Check } from 'lucide-react';
+import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-
-import { X } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 export default function Settings() {
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
-    const [stats, setStats] = useState({ members: 0, payments: 0 });
+
+    // Admin Name State
+    const [adminName, setAdminName] = useState(localStorage.getItem('admin_name') || 'Admin');
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [tempName, setTempName] = useState(adminName);
+    const updateNameMutation = useMutation(api.auth.updateName);
+
+    // Admin Username State
+    const [adminUsername, setAdminUsername] = useState(localStorage.getItem('admin_username') || 'admin');
+    const [isEditingUsername, setIsEditingUsername] = useState(false);
+    const [tempUsername, setTempUsername] = useState(adminUsername);
+    const updateUsernameMutation = useMutation(api.auth.updateUsername);
+
+
+    const handleUpdateName = async () => {
+        if (!tempName.trim()) {
+            showToast('Name cannot be empty', 'error');
+            return;
+        }
+        try {
+            await updateNameMutation({ name: tempName });
+            localStorage.setItem('admin_name', tempName);
+            setAdminName(tempName);
+            setIsEditingName(false);
+            window.dispatchEvent(new Event('adminProfileChanged'));
+            showToast('Name updated successfully', 'success');
+        } catch (err) {
+            showToast('Failed to update name', 'error');
+            console.error(err);
+        }
+    };
+
+    const handleUpdateUsername = async () => {
+        if (!tempUsername.trim()) {
+            showToast('Username cannot be empty', 'error');
+            return;
+        }
+        try {
+            const result = await updateUsernameMutation({ username: tempUsername });
+            if (result.success) {
+                localStorage.setItem('admin_username', tempUsername);
+                setAdminUsername(tempUsername);
+                setIsEditingUsername(false);
+                showToast('Username updated successfully', 'success');
+            } else {
+                showToast(result.message || 'Failed to update username', 'error');
+            }
+        } catch (err) {
+            showToast('Failed to update username', 'error');
+            console.error(err);
+        }
+    };
+
+    // Security States
+    const [autoLogout, setAutoLogout] = useState(localStorage.getItem('auto_logout') === 'true');
+    const [logoutDuration, setLogoutDuration] = useState(parseInt(localStorage.getItem('logout_duration')) || 15);
+
+    // Session Info
+    const lastLogin = localStorage.getItem('last_login');
+    const loginDevice = localStorage.getItem('login_device') || 'Current Session';
 
     // Password Prompt State
     const [promptState, setPromptState] = useState({
@@ -50,9 +110,6 @@ export default function Settings() {
         }
     };
 
-    const cloudMembers = useQuery(api.members.list) || [];
-    const cloudPayments = useQuery(api.payments.list) || [];
-
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [showChangePassword, setShowChangePassword] = useState(false);
     const [passData, setPassData] = useState({ current: '', new: '', confirm: '' });
@@ -65,11 +122,11 @@ export default function Settings() {
 
     const handleChangePassword = async () => {
         if (passData.new.length < 4) {
-            alert('New password must be at least 4 characters');
+            showToast('New password must be at least 4 characters', 'warning');
             return;
         }
         if (passData.new !== passData.confirm) {
-            alert('New passwords do not match');
+            showToast('New passwords do not match', 'error');
             return;
         }
 
@@ -80,14 +137,14 @@ export default function Settings() {
             });
 
             if (result.success) {
-                alert('Password updated successfully');
+                showToast('Password updated successfully', 'success');
                 setIsChangingPassword(false);
                 setPassData({ current: '', new: '', confirm: '' });
             } else {
-                alert('Failed to update password: ' + result.message);
+                showToast('Failed to update password: ' + result.message, 'error');
             }
         } catch (err) {
-            alert('Connection error. Please try again.');
+            showToast('Connection error. Please try again.', 'error');
         }
     };
 
@@ -100,23 +157,12 @@ export default function Settings() {
         localStorage.setItem('theme', theme);
     }, [theme]);
 
-    const handleCloudBackup = async () => {
-        const data = {
-            version: 1,
-            timestamp: new Date().toISOString(),
-            members: cloudMembers,
-            payments: cloudPayments
-        };
-
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `Manhaj_Cloud_Backup_${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
+    useEffect(() => {
+        localStorage.setItem('auto_logout', autoLogout);
+        localStorage.setItem('logout_duration', logoutDuration);
+        // Dispatch a custom event to notify App.jsx of setting changes
+        window.dispatchEvent(new Event('securitySettingsChanged'));
+    }, [autoLogout, logoutDuration]);
 
     const handleLogout = () => {
         openPrompt(
@@ -125,18 +171,6 @@ export default function Settings() {
             () => {
                 localStorage.removeItem('auth_token');
                 navigate('/login');
-            }
-        );
-    };
-
-    const [migrating, setMigrating] = useState(false);
-
-    const handleReset = () => {
-        openPrompt(
-            "Factory Reset Function",
-            "This action is irreversible. All data will be permanently deleted.",
-            async () => {
-                alert('Resetting Cloud database is not enabled from here for safety. Contact Admin.');
             }
         );
     };
@@ -150,14 +184,74 @@ export default function Settings() {
 
             {/* Account Section - Logout & Security */}
             <section className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700/50 mb-6 space-y-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h3 className="font-bold text-slate-900 dark:text-white">Admin Account</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">Current Session Active</p>
+                <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                    <div className="flex items-center space-x-4">
+                        <div className="p-3 bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-full">
+                            <User size={24} />
+                        </div>
+                        <div>
+                            {isEditingName ? (
+                                <div className="flex items-center space-x-2">
+                                    <input
+                                        type="text"
+                                        value={tempName}
+                                        onChange={(e) => setTempName(e.target.value)}
+                                        className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-sm font-bold text-slate-900 dark:text-white w-40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        autoFocus
+                                    />
+                                    <button onClick={handleUpdateName} className="p-1.5 bg-green-100 dark:bg-green-500/10 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-500/20 transition-colors">
+                                        <Check size={14} />
+                                    </button>
+                                    <button onClick={() => { setIsEditingName(false); setTempName(adminName); }} className="p-1.5 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center space-x-2 group">
+                                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">{adminName}</h3>
+                                    <button
+                                        onClick={() => setIsEditingName(true)}
+                                        className="text-slate-400 hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100"
+                                        title="Edit Name"
+                                    >
+                                        <Pencil size={14} />
+                                    </button>
+                                </div>
+                            )}
+                            {isEditingUsername ? (
+                                <div className="flex items-center space-x-2 mt-1">
+                                    <span className="text-slate-400 text-sm">@</span>
+                                    <input
+                                        type="text"
+                                        value={tempUsername}
+                                        onChange={(e) => setTempUsername(e.target.value)}
+                                        className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-300 w-32 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        autoFocus
+                                    />
+                                    <button onClick={handleUpdateUsername} className="p-1 bg-green-100 dark:bg-green-500/10 text-green-600 dark:text-green-400 rounded hover:bg-green-200 dark:hover:bg-green-500/20 transition-colors">
+                                        <Check size={12} />
+                                    </button>
+                                    <button onClick={() => { setIsEditingUsername(false); setTempUsername(adminUsername); }} className="p-1 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                                        <X size={12} />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center space-x-1 group mt-0.5">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">@{adminUsername}</p>
+                                    <button
+                                        onClick={() => setIsEditingUsername(true)}
+                                        className="text-slate-400 hover:text-blue-500 transition-colors opacity-0 group-hover:opacity-100 p-0.5"
+                                        title="Edit Username"
+                                    >
+                                        <Pencil size={12} />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                     <button
                         onClick={handleLogout}
-                        className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white font-bold rounded-xl active:scale-95 transition-all text-sm hover:bg-rose-100 dark:hover:bg-rose-500/20 hover:text-rose-600 dark:hover:text-rose-400"
+                        className="px-4 py-2 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold rounded-xl active:scale-95 transition-all text-sm hover:bg-rose-100 dark:hover:bg-rose-500/20 border border-rose-100 dark:border-rose-500/10"
                     >
                         Log Out
                     </button>
@@ -220,7 +314,7 @@ export default function Settings() {
                 </div>
             </section>
 
-            {/* Theme Section */}
+            {/* Appearance Section */}
             <section className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700/50">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
@@ -234,63 +328,92 @@ export default function Settings() {
                     </div>
                     <button
                         onClick={toggleTheme}
-                        className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white font-bold rounded-xl active:scale-95 transition-all text-sm"
+                        className={`relative w-14 h-8 flex items-center rounded-full p-1 transition-all duration-300 ${theme === 'dark' ? 'bg-blue-600' : 'bg-slate-200'}`}
+                        aria-label="Toggle Theme"
                     >
-                        {theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}
+                        <div className={`absolute left-1 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 flex items-center justify-center ${theme === 'dark' ? 'translate-x-6' : 'translate-x-0'}`}>
+                            {theme === 'dark' ? <Moon size={14} className="text-blue-600" /> : <Sun size={14} className="text-amber-500" />}
+                        </div>
                     </button>
                 </div>
             </section>
 
-            {/* Data Management Section */}
+            {/* Security Privacy Section */}
             <section className="space-y-4">
-                <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 ml-2">Data Management</h3>
+                <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 ml-2 text-[10px]">Security & Privacy</h3>
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700/50 space-y-6">
-                    <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-500/20">
-                        <p className="text-[10px] text-blue-500 uppercase font-black tracking-widest mb-1">Cloud Database Status</p>
-                        <div className="flex items-baseline space-x-6">
-                            <div className="flex items-baseline space-x-2">
-                                <span className="text-2xl font-black text-slate-900 dark:text-white">{cloudMembers.length}</span>
-                                <span className="text-xs text-slate-500 font-bold">Members</span>
+                    {/* Auto-Logout */}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                            <div className="p-3 bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl">
+                                <Timer size={24} />
                             </div>
-                            <div className="flex items-baseline space-x-2">
-                                <span className="text-lg font-black text-slate-700 dark:text-slate-300">{cloudPayments.length}</span>
-                                <span className="text-[10px] text-slate-500 font-medium lowercase">Payments</span>
+                            <div>
+                                <h3 className="font-bold text-slate-900 dark:text-white">Auto-Logout</h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Lock app after inactivity</p>
                             </div>
                         </div>
-                    </div>
-                    <div className="space-y-3">
                         <button
-                            onClick={handleCloudBackup}
-                            className="w-full flex items-center justify-between p-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-500 transition-all active:scale-98 shadow-lg shadow-blue-500/20"
+                            onClick={() => {
+                                const newState = !autoLogout;
+                                setAutoLogout(newState);
+                                showToast(
+                                    `Auto-logout ${newState ? 'enabled' : 'disabled'}`,
+                                    newState ? 'success' : 'info'
+                                );
+                            }}
+                            className={`relative w-14 h-8 flex items-center rounded-full p-1 transition-all duration-300 ${autoLogout ? 'bg-amber-500' : 'bg-slate-200 dark:bg-slate-700'}`}
                         >
-                            <div className="flex items-center space-x-3">
-                                <CloudUpload size={20} />
-                                <span>Download Cloud Backup (JSON)</span>
-                            </div>
+                            <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 ${autoLogout ? 'translate-x-6' : 'translate-x-0'}`} />
                         </button>
                     </div>
-                </div>
-            </section>
 
-            {/* Danger Zone */}
-            <section className="space-y-4">
-                <h3 className="text-sm font-black uppercase tracking-widest text-rose-500 ml-2">Danger Zone</h3>
-                <div className="bg-rose-50 dark:bg-rose-900/10 p-6 rounded-3xl border border-rose-100 dark:border-rose-500/20">
-                    <div className="flex items-center space-x-4 mb-4">
-                        <div className="p-3 bg-rose-200 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl">
-                            <ShieldAlert size={24} />
+                    {autoLogout && (
+                        <div className="pl-14 pt-2 animate-fade-in space-y-3">
+                            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                                Inactivity Timeout
+                            </p>
+                            <div className="flex bg-slate-100 dark:bg-slate-900/50 p-1 rounded-xl w-full max-w-md">
+                                {[5, 10, 15, 30, 60].map(mins => (
+                                    <button
+                                        key={mins}
+                                        onClick={() => {
+                                            setLogoutDuration(mins);
+                                            showToast(`Auto-logout set to ${mins} minutes`, 'info');
+                                        }}
+                                        className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${logoutDuration === mins
+                                            ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                                            : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                            }`}
+                                    >
+                                        {mins}m
+                                    </button>
+                                ))}
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="font-bold text-rose-700 dark:text-rose-400">Factory Reset</h3>
-                            <p className="text-sm text-rose-600/70 dark:text-rose-400/70">Requires Admin Authentication</p>
+                    )}
+
+                    {/* Session Info */}
+                    <div className="pt-6 border-t border-slate-100 dark:border-slate-700 space-y-4">
+                        <div className="flex items-start space-x-4">
+                            <div className="p-3 bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                                <ShieldCheck size={24} />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-slate-900 dark:text-white">Session Intelligence</h3>
+                                <div className="mt-2 space-y-2">
+                                    <div className="flex items-center space-x-2 text-xs text-slate-500">
+                                        <Clock size={12} />
+                                        <span>Last Login: {lastLogin ? format(new Date(lastLogin), 'iii, dd MMM - HH:mm') : 'First session'}</span>
+                                    </div>
+                                    <div className="flex items-center space-x-2 text-xs text-slate-500">
+                                        <Monitor size={12} />
+                                        <span>Device: {loginDevice}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <button
-                        onClick={handleReset}
-                        className="w-full py-3 bg-white dark:bg-rose-500 text-rose-600 dark:text-white font-bold rounded-xl border border-rose-200 dark:border-transparent shadow-sm active:scale-95 transition-all"
-                    >
-                        Erasure Everything
-                    </button>
                 </div>
             </section>
 
@@ -323,7 +446,7 @@ export default function Settings() {
                                     autoComplete="new-password"
                                     value={promptPassword}
                                     onChange={e => setPromptPassword(e.target.value)}
-                                    className="w-full text-center text-lg font-bold tracking-widest px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                    className="w-full text-center text-lg font-bold tracking-widest px-12 py-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                                 />
                                 <button
                                     type="button"

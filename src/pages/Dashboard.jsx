@@ -4,6 +4,7 @@ import { api } from "../../convex/_generated/api";
 import { calculateMemberStats } from '../utils/stats';
 import { Users, CreditCard, AlertCircle, Plus, ChevronRight, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import RevenueChart from '../components/RevenueChart';
 
 const StatCard = ({ title, value, icon: Icon, color, subtext, onClick, active }) => (
     <button
@@ -69,6 +70,13 @@ export default function Dashboard() {
                     onClick={() => setSelectedTab(selectedTab === 'pending' ? null : 'pending')}
                 />
             </div>
+
+            {/* Revenue Chart */}
+            {paymentsData && paymentsData.length > 0 && (
+                <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
+                    <RevenueChart payments={paymentsData} />
+                </div>
+            )}
 
             {/* List View */}
             {selectedTab && (
