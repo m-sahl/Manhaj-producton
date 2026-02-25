@@ -6,10 +6,9 @@ import { Users, CreditCard, AlertCircle, Plus, ChevronRight, X } from 'lucide-re
 import { Link } from 'react-router-dom';
 import RevenueChart from '../components/RevenueChart';
 
-const StatCard = ({ title, value, icon: Icon, color, subtext, onClick, active }) => (
-    <button
-        onClick={onClick}
-        className={`w-full text-left bg-white dark:bg-slate-800/50 backdrop-blur-md p-5 rounded-2xl border transition-all active:scale-95 relative overflow-hidden ${active ? 'border-blue-500 shadow-lg shadow-blue-500/20 dark:shadow-blue-900/20' : 'border-slate-200 dark:border-slate-700/50 shadow-sm dark:shadow-none'}`}
+const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
+    <div
+        className="w-full text-left bg-white dark:bg-slate-800/50 backdrop-blur-md p-5 rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-sm dark:shadow-none relative overflow-hidden"
     >
         <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 ${color}`}></div>
         <div className="flex justify-between items-start relative z-10">
@@ -18,17 +17,16 @@ const StatCard = ({ title, value, icon: Icon, color, subtext, onClick, active })
                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{value}</h3>
                 {subtext && <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">{subtext}</p>}
             </div>
-            <div className={`p-3 rounded-xl bg-slate-100 dark:bg-slate-900/50 ${active ? 'text-blue-500 dark:text-blue-400' : color.replace('bg-', 'text-')}`}>
+            <div className={`p-3 rounded-xl bg-slate-100 dark:bg-slate-900/50 ${color.replace('bg-', 'text-')}`}>
                 <Icon size={20} />
             </div>
         </div>
-    </button>
+    </div>
 );
 
 export default function Dashboard() {
     const membersData = useQuery(api.members.list);
     const paymentsData = useQuery(api.payments.list, {});
-    const [selectedTab, setSelectedTab] = useState(null); // 'total' or 'pending'
 
     const members = (membersData && paymentsData)
         ? membersData.map(m => calculateMemberStats(m, paymentsData))
@@ -36,7 +34,6 @@ export default function Dashboard() {
 
     const stats = {
         totalMembers: members.length,
-        totalCollected: (paymentsData || []).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0),
         totalPending: members.reduce((sum, m) => sum + (m.balance > 0 ? m.balance : 0), 0),
         members,
         pendingMembers: members.filter(m => m.balance > 0)
@@ -44,30 +41,18 @@ export default function Dashboard() {
 
     return (
         <div className="space-y-6 animate-fade-in pb-10">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
                 <StatCard
                     title="Total Members"
                     value={stats.totalMembers}
                     icon={Users}
-                    color="bg-blue-500"
-                    active={selectedTab === 'total'}
-                    onClick={() => setSelectedTab(selectedTab === 'total' ? null : 'total')}
-                />
-                <StatCard
-                    title="Total Collected"
-                    value={`₹${stats.totalCollected.toLocaleString()}`}
-                    icon={CreditCard}
-                    color="bg-green-500"
-                    subtext="Lifetime collection"
-                    onClick={() => setSelectedTab(null)}
+                    color="bg-blue-600"
                 />
                 <StatCard
                     title="Pending Dues"
                     value={`₹${stats.totalPending.toLocaleString()}`}
                     icon={AlertCircle}
-                    color="bg-orange-500"
-                    active={selectedTab === 'pending'}
-                    onClick={() => setSelectedTab(selectedTab === 'pending' ? null : 'pending')}
+                    color="bg-rose-500"
                 />
             </div>
 
@@ -78,45 +63,59 @@ export default function Dashboard() {
                 </div>
             )}
 
-            {/* List View */}
-            {selectedTab && (
-                <div className="animate-in fade-in slide-in-from-top-4 duration-300">
-                    <div className="flex items-center justify-between mb-4 px-2">
-                        <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 font-mono">
-                            {selectedTab === 'total' ? 'All Members List' : 'Outstanding Dues List'}
+            {/* Outstanding Dues List */}
+            {stats.pendingMembers.length > 0 && (
+                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
+                    <div className="flex items-center justify-between px-1">
+                        <h2 className="text-sm font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 font-mono">
+                            Outstanding Dues
                         </h2>
-                        <button onClick={() => setSelectedTab(null)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-                            <X size={16} />
-                        </button>
+                        <Link to="/members" className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline">
+                            View All
+                        </Link>
                     </div>
 
-                    <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-700">
-                        {(selectedTab === 'total' ? stats.members : stats.pendingMembers).map(member => (
+                    <div className="grid grid-cols-1 gap-3 max-h-[320px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
+                        {stats.pendingMembers.slice(0, 5).map((member) => (
                             <Link
                                 key={member._id}
                                 to={`/members/${member._id}`}
-                                className="flex items-center justify-between p-4 bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/30 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group active:scale-[0.99] shadow-sm dark:shadow-none"
+                                className="premium-card group relative p-4 pl-6 flex items-center justify-between no-underline bg-white dark:bg-slate-900/40 backdrop-blur-xl transition-all active:scale-[0.98]"
                             >
+                                {/* Status Accent Bar */}
+                                <div className="absolute left-0 top-1/4 bottom-1/4 w-1 rounded-r-full bg-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.3)] transition-all group-hover:top-2 group-hover:bottom-2" />
+
                                 <div className="flex items-center space-x-3">
-                                    <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center font-bold text-slate-500 dark:text-slate-300">
+                                    <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center font-black text-rose-600 dark:text-rose-400 shadow-inner">
                                         {member.name.charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                        <p className="text-sm font-bold text-slate-900 dark:text-white leading-none">{member.name}</p>
-                                        <p className="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-tighter">Member ID: {member._id.slice(0, 8)}...</p>
+                                        <p className="text-sm font-black text-slate-900 dark:text-white leading-none">{member.name}</p>
+                                        <p className="text-[10px] text-slate-500 mt-1 font-bold">ID: {member._id.slice(0, 6)}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center space-x-4">
-                                    {selectedTab === 'pending' && (
-                                        <p className="text-sm font-black text-orange-500">₹{member.balance}</p>
-                                    )}
-                                    <ChevronRight size={16} className="text-slate-400 dark:text-slate-600 group-hover:text-blue-500 transition-colors" />
+
+                                <div className="flex items-center space-x-3">
+                                    <div className="text-right flex flex-col items-end">
+                                        <span className="text-[9px] font-black uppercase text-rose-500 tracking-tighter">Due</span>
+                                        <span className="text-sm font-black text-rose-600 dark:text-rose-400">₹{member.balance.toLocaleString()}</span>
+                                    </div>
+                                    <div className="p-1.5 rounded-lg bg-slate-50 dark:bg-white/5 text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all transform group-hover:translate-x-1">
+                                        <ChevronRight size={14} />
+                                    </div>
                                 </div>
                             </Link>
                         ))}
+                        {stats.pendingMembers.length > 5 && (
+                            <Link to="/members" className="text-center py-2 text-xs font-bold text-slate-400 hover:text-blue-500 transition-colors">
+                                + {stats.pendingMembers.length - 5} more members with dues
+                            </Link>
+                        )}
                     </div>
                 </div>
             )}
+
+
 
             <div className="pt-4">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Quick Actions</h2>

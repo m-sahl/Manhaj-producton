@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { calculateMemberStats } from '../utils/stats';
-import { Phone, Trash2, CheckCircle2, History, Clock, Edit2, X, Save, CreditCard, ArrowRight } from 'lucide-react';
+import { Phone, Trash2, CheckCircle2, History, Clock, Edit2, X, Save, CreditCard, ArrowRight, Plus, AlertCircle } from 'lucide-react';
 import { format, startOfMonth, addMonths, isBefore, parseISO } from 'date-fns';
 
 export default function MemberDetails() {
@@ -236,22 +236,33 @@ export default function MemberDetails() {
 
     return (
         <div className="animate-fade-in space-y-6 pb-24 relative min-h-[90vh]">
-            {/* Profile Info Card */}
-            <div className="bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 rounded-3xl p-6 shadow-sm dark:shadow-xl space-y-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-bold ${member.balance > 0 ? 'bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-500' : 'bg-green-100 dark:bg-green-500/20 text-green-600 dark:text-green-500'}`}>
-                            {member.name.charAt(0).toUpperCase()}
+            {/* Profile Header & Actions */}
+            <div className="flex flex-col space-y-6">
+                <div className="flex items-center justify-between px-1">
+                    <div className="flex items-center space-x-5">
+                        <div className="relative group">
+                            <div className={`absolute -inset-1 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-500 ${member.balance > 0 ? 'bg-rose-500' : 'bg-emerald-500'}`}></div>
+                            <div className={`relative w-20 h-20 rounded-3xl flex items-center justify-center text-3xl font-black shadow-2xl transition-transform group-hover:scale-105 duration-300 ${member.balance > 0 ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
+                                {member.name.charAt(0).toUpperCase()}
+                            </div>
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-900 dark:text-white leading-tight">{member.name}</h1>
-                            <div className="flex items-center space-x-2 text-slate-500 dark:text-slate-400 mt-1">
-                                <Phone size={14} />
-                                <span className="text-sm font-medium">{member.phone}</span>
+                            <h1 className="text-3xl font-black text-slate-900 dark:text-white leading-tight tracking-tight">
+                                {member.name}
+                            </h1>
+                            <div className="flex items-center space-x-3 mt-1.5">
+                                <div className="flex items-center space-x-1 px-2 py-0.5 bg-slate-100 dark:bg-white/5 rounded-full border border-slate-200 dark:border-white/5">
+                                    <Phone size={12} className="text-slate-400" />
+                                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{member.phone}</span>
+                                </div>
+                                <span className="text-[10px] font-mono font-bold text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-white/5 px-2 py-1 rounded-md border border-slate-100 dark:border-white/5">
+                                    #{member._id.slice(0, 8)}
+                                </span>
                             </div>
                         </div>
                     </div>
-                    <div className="flex space-x-2">
+
+                    <div className="flex items-center space-x-3">
                         <button
                             onClick={() => {
                                 setEditData({
@@ -264,186 +275,224 @@ export default function MemberDetails() {
                                 });
                                 setIsEditModalOpen(true);
                             }}
-                            className="p-3 bg-slate-100 dark:bg-slate-700/50 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl text-slate-500 dark:text-slate-300 transition-all border border-slate-200 dark:border-slate-600/30"
+                            className="p-3.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-2xl text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all border border-slate-200 dark:border-white/5 shadow-sm active:scale-90"
                         >
-                            <Edit2 size={18} />
+                            <Edit2 size={20} />
                         </button>
                         <button
                             onClick={handleDeleteMember}
-                            className="p-3 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 rounded-2xl text-rose-500 transition-all border border-rose-100 dark:border-rose-500/20"
+                            className="p-3.5 bg-rose-50 dark:bg-rose-500/5 hover:bg-rose-500 hover:text-white rounded-2xl text-rose-500 transition-all border border-rose-100 dark:border-rose-500/10 shadow-sm active:scale-90"
                         >
-                            <Trash2 size={18} />
+                            <Trash2 size={20} />
                         </button>
                     </div>
                 </div>
 
+                {/* Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/30">
-                        <p className="text-[10px] text-slate-500 uppercase font-black tracking-tighter mb-1 font-mono">Total Due</p>
-                        <p className={`text-2xl font-black ${member.totalDue > 0 ? 'text-orange-500' : 'text-emerald-500'}`}>
-                            ₹{Math.round(member.totalDue)}
-                        </p>
+                    <div className="premium-card p-5 relative overflow-hidden group">
+                        <div className={`absolute top-0 right-0 w-24 h-24 blur-3xl opacity-20 -mr-12 -mt-12 transition-colors duration-500 ${member.totalDue > 0 ? 'bg-rose-500' : 'bg-emerald-500'}`}></div>
+                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-2 font-mono">Current Balance</p>
+                        <div className="flex items-baseline space-x-1">
+                            <span className={`text-2xl font-black ${member.totalDue > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                                ₹{Math.round(member.totalDue).toLocaleString()}
+                            </span>
+                        </div>
+                        <div className={`mt-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${member.totalDue > 0 ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-500' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500'}`}>
+                            {member.totalDue > 0 ? 'Pending Dues' : 'Fully Paid'}
+                        </div>
                     </div>
-                    <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/30">
-                        <p className="text-[10px] text-slate-500 uppercase font-black tracking-tighter mb-1 font-mono">Monthly Fee</p>
-                        <p className="text-2xl font-black text-slate-900 dark:text-white">₹{member.subscriptionAmount}</p>
+
+                    <div className="premium-card p-5 group">
+                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-2 font-mono">Monthly Rate</p>
+                        <p className="text-2xl font-black text-slate-900 dark:text-white">₹{parseFloat(member.subscriptionAmount).toLocaleString()}</p>
+                        <div className="mt-3 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                            {member.subscriptionType} Cycle
+                        </div>
                     </div>
-                    <div className={`p-4 rounded-2xl border border-slate-100 dark:border-slate-700/30 col-span-2 md:col-span-1 ${member.advanceCredit > 0 ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' : 'bg-slate-50 dark:bg-slate-900/50 opacity-50'}`}>
-                        <p className="text-[10px] text-slate-500 uppercase font-black tracking-tighter mb-1 font-mono">Advance Credit</p>
-                        <p className={`text-2xl font-black ${member.advanceCredit > 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-400'}`}>
-                            ₹{member.advanceCredit}
+
+                    <div className={`premium-card p-5 group col-span-2 md:col-span-1 border-emerald-500/20 shadow-emerald-500/5 ${member.advanceCredit > 0 ? 'bg-emerald-50/30 dark:bg-emerald-500/5' : 'opacity-60'}`}>
+                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400 mb-2 font-mono">Advance Credit</p>
+                        <p className={`text-2xl font-black ${member.advanceCredit > 0 ? 'text-emerald-500' : 'text-slate-400'}`}>
+                            ₹{member.advanceCredit.toLocaleString()}
                         </p>
+                        <p className="mt-3 text-[10px] font-bold text-slate-400">Rollover for next month</p>
                     </div>
                 </div>
             </div>
 
             {/* Breakdown Summary */}
-            <div className="bg-slate-100 dark:bg-slate-800/20 border border-slate-200 dark:border-slate-700/30 rounded-3xl p-5 space-y-3">
-                <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 mb-2 font-mono">Breakdown</h3>
-                <div className="space-y-2">
-                    <div className="flex justify-between text-xs font-mono">
-                        <span className="text-slate-500 dark:text-slate-400">Unpaid Months ({member.unpaidMonthsCount})</span>
-                        <span className="text-slate-900 dark:text-white">₹{member.unpaidMonthsCount * (parseFloat(member.subscriptionAmount) || 0)}</span>
+            <div className="premium-card p-6 bg-slate-50/50 dark:bg-white/5 space-y-4">
+                <div className="flex items-center space-x-2">
+                    <History size={16} className="text-blue-500" />
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 font-mono">Dues Breakdown</h3>
+                </div>
+                <div className="space-y-3">
+                    <div className="flex justify-between items-center text-xs font-bold">
+                        <span className="text-slate-500">Unpaid Cycle ({member.unpaidMonthsCount})</span>
+                        <span className="text-slate-900 dark:text-white font-mono">₹{(member.unpaidMonthsCount * (parseFloat(member.subscriptionAmount) || 0)).toLocaleString()}</span>
                     </div>
                     {member.openingDues > 0 && (
-                        <div className="flex justify-between text-xs font-mono">
-                            <span className="text-slate-500 dark:text-slate-400">Old Opening Balance</span>
-                            <span className="text-slate-900 dark:text-white">₹{member.openingDues}</span>
+                        <div className="flex justify-between items-center text-xs font-bold">
+                            <span className="text-slate-500">Opening Arrears</span>
+                            <span className="text-slate-900 dark:text-white font-mono">₹{member.openingDues.toLocaleString()}</span>
                         </div>
                     )}
                     {member.advanceCredit > 0 && (
-                        <div className="flex justify-between text-xs font-mono">
-                            <span className="text-emerald-600 dark:text-emerald-500 font-bold">Advance Credit Rollover</span>
-                            <span className="text-emerald-600 dark:text-emerald-500">₹{member.advanceCredit}</span>
+                        <div className="flex justify-between items-center text-xs font-bold px-3 py-2 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
+                            <span className="text-emerald-600 dark:text-emerald-500 font-black uppercase tracking-tighter">Credit Rollover</span>
+                            <span className="text-emerald-600 dark:text-emerald-500 font-black font-mono">-₹{member.advanceCredit.toLocaleString()}</span>
                         </div>
                     )}
-                    <div className="pt-2 border-t border-slate-200 dark:border-slate-700/50 flex justify-between items-center">
-                        <span className="text-[10px] font-black text-slate-500 uppercase font-mono">Grand Total Due</span>
-                        <span className={`text-lg font-black ${member.totalDue > 0 ? 'text-orange-500' : 'text-emerald-500'}`}>
-                            ₹{Math.round(member.totalDue)}
+                    <div className="pt-4 border-t border-slate-200 dark:border-white/5 flex justify-between items-center">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-mono">Final Balance</span>
+                        <span className={`text-xl font-black ${member.totalDue > 0 ? 'text-rose-500' : 'text-emerald-500'}`}>
+                            ₹{Math.round(member.totalDue).toLocaleString()}
                         </span>
                     </div>
                 </div>
             </div>
 
             {/* Payment Sheet Window */}
-            <div className="bg-white dark:bg-slate-200 rounded-[2.5rem] p-7 shadow-2xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-slate-100 dark:bg-slate-300 rounded-full -mr-16 -mt-16 opacity-50"></div>
+            <div className="glass-dark rounded-[2.5rem] p-8 relative overflow-hidden group shadow-2xl">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
 
-                <div className="flex justify-between items-center mb-6 relative z-10">
-                    <div>
-                        <h3 className="text-xl font-black text-slate-900 tracking-tight">Payment Sheet</h3>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-0.5">TAP TO TOGGLE STATUS</p>
+                <div className="flex justify-between items-center mb-8 relative z-10">
+                    <div className="space-y-1">
+                        <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Subscription Status</h3>
+                        <p className="text-[10px] text-blue-600 dark:text-blue-400 font-black uppercase tracking-[0.2em]">TAP TO RECORD PAYMENT</p>
                     </div>
-                    <div className="bg-slate-900 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter">
-                        ID: {member._id.slice(0, 8)}...
+                    <div className="flex flex-col items-end">
+                        <div className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-tighter">
+                            Status: {member.totalDue > 0 ? 'Action Required' : 'Current'}
+                        </div>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 relative z-10">
                     {gridItems.map((item, idx) => {
-                        const getStatusStyles = (status) => {
-                            switch (status) {
-                                case 'paid': return 'bg-emerald-500/15 border-emerald-500/40 text-emerald-600 shadow-sm shadow-emerald-500/5';
-                                case 'partial': return 'bg-orange-500/10 border-orange-500/20 text-orange-500';
-                                default: return 'bg-slate-50 dark:bg-slate-100 border-slate-200 dark:border-slate-300 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-200 transition-colors';
-                            }
-                        }
+                        const isPaid = item.status === 'paid';
+                        const isPartial = item.status === 'partial';
+
                         return (
                             <button
                                 key={idx}
                                 onClick={() => handleToggleMonth(item)}
-                                className={`p-4 rounded-[1.5rem] border-2 flex items-center justify-between transition-all active:scale-95 relative overflow-hidden ${getStatusStyles(item.status)}`}
+                                className={`p-5 rounded-[1.8rem] border-2 transition-all active:scale-95 text-left group/btn relative overflow-hidden ${isPaid
+                                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                                    : isPartial
+                                        ? 'bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-400'
+                                        : 'bg-slate-50/50 dark:bg-white/5 border-slate-200/60 dark:border-white/10 text-slate-500 hover:border-blue-500/30'
+                                    }`}
                             >
-                                <div className="flex justify-between items-start relative z-10">
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-80">{item.label || format(item.date, 'MMM yyyy')}</p>
-                                        <h4 className="text-lg font-black tracking-tight">{item.status === 'paid' ? 'Paid' : (item.status === 'partial' ? 'Part Paid' : 'Unpaid')}</h4>
-                                        <div className="flex items-center space-x-1">
-                                            <p className="text-xs font-bold font-mono">₹{item.coverageAmount}</p>
-                                            {item.status === 'paid' && <CheckCircle2 size={12} className="text-emerald-500" />}
-                                        </div>
+                                <div className="space-y-1 relative z-10">
+                                    <p className="text-[10px] font-black uppercase tracking-[0.1em] opacity-60">
+                                        {item.label || format(item.date, 'MMM yyyy')}
+                                    </p>
+                                    <div className="flex items-center space-x-2">
+                                        <h4 className="text-base font-black tracking-tight leading-none capitalize">
+                                            {isPaid ? 'Settled' : isPartial ? 'Balance' : 'Pending'}
+                                        </h4>
                                     </div>
+                                    <p className="text-xs font-black font-mono opacity-80 mt-1">
+                                        ₹{item.coverageAmount.toLocaleString()}
+                                    </p>
                                 </div>
 
-                                {item.status === 'paid' && (
-                                    <CheckCircle2
-                                        className="absolute -right-4 -top-4 text-emerald-500/30"
-                                        size={100}
-                                        strokeWidth={3}
-                                    />
+                                {isPaid && (
+                                    <CheckCircle2 size={48} className="absolute -right-4 -bottom-4 text-emerald-500/20 transition-transform group-hover/btn:scale-110" />
+                                )}
+                                {!isPaid && !isPartial && (
+                                    <div className="absolute right-4 bottom-4 w-6 h-6 rounded-lg bg-slate-200 dark:bg-white/10 flex items-center justify-center opacity-0 group-hover/btn:opacity-100 transition-opacity">
+                                        <Plus size={14} className="text-slate-400" />
+                                    </div>
                                 )}
                             </button>
                         );
                     })}
                 </div>
 
-                <div className="mt-8 pt-5 border-t border-slate-100 dark:border-slate-300 flex items-center justify-between relative z-10">
-                    <div className="flex items-center space-x-2">
-                        <span className="text-[11px] text-emerald-500 dark:text-emerald-600 font-black uppercase tracking-tighter">
-                            {gridItems.filter(m => m.status === 'paid').length} Paid
-                        </span>
-                        <span className="w-1 h-1 bg-slate-300 dark:bg-slate-400 rounded-full"></span>
-                        <span className="text-[11px] text-orange-500 font-black uppercase tracking-tighter">
-                            {gridItems.filter(m => m.status === 'partial').length} Partial
-                        </span>
-                        <span className="w-1 h-1 bg-slate-300 dark:bg-slate-400 rounded-full"></span>
-                        <span className="text-[11px] text-rose-500 font-black uppercase tracking-tighter">
-                            {gridItems.filter(m => m.status === 'unpaid').length} Pending
-                        </span>
+                <div className="mt-8 pt-6 border-t border-slate-200 dark:border-white/5 flex items-center justify-between relative z-10">
+                    <div className="flex items-center space-x-4">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-widest mb-1">Quick Stats</span>
+                            <div className="flex items-center space-x-3">
+                                <div className="flex items-center space-x-1.5">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                    <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
+                                        {gridItems.filter(m => m.status === 'paid').length} Paid
+                                    </span>
+                                </div>
+                                <div className="flex items-center space-x-1.5">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-rose-500"></div>
+                                    <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
+                                        {gridItems.filter(m => m.status === 'unpaid').length} Due
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Payment History List */}
             {payments.length > 0 && (
-                <div id="payment-history" className="space-y-4 px-2">
-                    <div className="flex items-center space-x-2 text-slate-400 dark:text-slate-500">
+                <div id="payment-history" className="space-y-6">
+                    <div className="flex items-center space-x-2 text-slate-500 dark:text-slate-400 px-1">
                         <History size={16} />
-                        <h3 className="text-xs font-black uppercase tracking-[0.2em]">Payment History</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] font-mono">Payment History</h3>
                     </div>
 
                     <div className="space-y-3">
-                        {payments.map((p) => (
-                            <div key={p._id} className="bg-white dark:bg-slate-800/30 border border-slate-200 dark:border-slate-700/30 p-4 rounded-2xl flex justify-between items-center group active:scale-98 transition-all relative overflow-hidden shadow-sm dark:shadow-none">
-                                <div className="flex items-center space-x-3">
-                                    <div className={`p-2 rounded-xl ${p.forMonth !== undefined ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500' : 'bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-500'}`}>
-                                        <CheckCircle2 size={18} />
-                                    </div>
-                                    <div className="relative z-10">
-                                        <p className="text-sm font-bold text-slate-900 dark:text-white capitalize leading-tight">
-                                            {p.forMonth !== undefined
-                                                ? `${p.mode === 'Monthly Fee' ? 'Monthly Fee:' : 'Partial Pay:'} ${p.forMonth} ${p.forYear}`
-                                                : 'Manual Payment'}
-                                        </p>
-                                        <div className="flex items-center space-x-1 text-slate-500 mt-1">
-                                            <Clock size={10} />
-                                            <p className="text-[10px] font-medium font-mono uppercase">
-                                                {format(new Date(p.date), 'dd MMM yyyy • h:mm a')}
+                        {payments.map((p, index) => {
+                            const isMonthly = p.forMonth !== undefined;
+                            return (
+                                <div
+                                    key={p._id}
+                                    style={{ animationDelay: `${index * 50}ms` }}
+                                    className="premium-card group relative p-4 pl-6 flex justify-between items-center bg-white dark:bg-slate-900/40 backdrop-blur-xl animate-slide-up"
+                                >
+                                    {/* Status Accent Bar */}
+                                    <div className={`absolute left-0 top-1/4 bottom-1/4 w-1 rounded-r-full transition-all group-hover:top-2 group-hover:bottom-2 ${isMonthly ? 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.3)]' : 'bg-blue-500 shadow-[0_0_12px_rgba(59,130,246,0.3)]'}`} />
+
+                                    <div className="flex items-center space-x-4">
+                                        <div className={`p-2.5 rounded-2xl ${isMonthly ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500' : 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-500'}`}>
+                                            <CreditCard size={20} />
+                                        </div>
+                                        <div className="relative z-10 space-y-0.5">
+                                            <p className="text-sm font-black text-slate-900 dark:text-white capitalize">
+                                                {isMonthly
+                                                    ? `${p.mode === 'Monthly Fee' ? 'Fee:' : 'Partial:'} ${p.forMonth} ${p.forYear}`
+                                                    : 'Direct Entry'}
                                             </p>
+                                            <div className="flex items-center space-x-1 text-slate-400">
+                                                <Clock size={10} />
+                                                <p className="text-[9px] font-bold font-mono uppercase tracking-tighter">
+                                                    {format(new Date(p.date), 'dd MMM yyyy • h:mm a')}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="flex items-center space-x-3 relative z-10">
-                                    <div className="text-right">
-                                        <p className={`text-sm font-black ${p.forMonth !== undefined ? 'text-emerald-500 dark:text-emerald-400' : 'text-blue-500 dark:text-blue-400'}`}>₹{Math.round(p.amount)}</p>
-                                        <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tighter">SUCCESS</p>
+                                    <div className="flex items-center space-x-4 relative z-10">
+                                        <div className="text-right">
+                                            <p className={`text-base font-black ${isMonthly ? 'text-emerald-600 dark:text-emerald-500' : 'text-blue-600 dark:text-blue-500'}`}>₹{Math.round(p.amount).toLocaleString()}</p>
+                                            <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">POSTED</p>
+                                        </div>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setPaymentToRevert(p);
+                                                setSelectedMonthDate(isMonthly ? parseMonth(p.forMonth, p.forYear) : new Date(p.date));
+                                                setIsRevertModalOpen(true);
+                                            }}
+                                            className="p-2.5 bg-rose-50 dark:bg-rose-500/5 text-rose-500 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500 hover:text-white"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setPaymentToRevert(p);
-                                            setSelectedMonthDate(p.forMonth !== undefined ? parseMonth(p.forMonth, p.forYear) : new Date(p.date));
-                                            setIsRevertModalOpen(true);
-                                        }}
-                                        className="p-2.5 bg-rose-50 dark:bg-rose-500/10 text-rose-500 rounded-xl opacity-0 md:opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500 hover:text-white"
-                                        title="Delete this transaction"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             )}
@@ -451,83 +500,65 @@ export default function MemberDetails() {
             {/* Edit Modal */}
             {isEditModalOpen && editData && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={() => setIsEditModalOpen(false)}></div>
-                    <div className="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-[2rem] overflow-hidden relative z-10 shadow-2xl animate-in fade-in zoom-in duration-200">
-                        <div className="p-6 border-b border-slate-700 flex justify-between items-center">
-                            <h3 className="text-lg font-bold text-white">Edit Profile</h3>
-                            <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-white p-1">
-                                <X size={24} />
+                    <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-500" onClick={() => setIsEditModalOpen(false)}></div>
+                    <div className="glass-dark w-full max-w-sm rounded-[2.5rem] overflow-hidden relative z-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300">
+                        <div className="p-8 border-b border-slate-200 dark:border-white/5 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
+                            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Modify Profile</h3>
+                            <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-rose-500 p-2 bg-white dark:bg-slate-900 rounded-xl transition-colors border border-slate-100 dark:border-white/5 shadow-sm">
+                                <X size={20} />
                             </button>
                         </div>
-                        <form onSubmit={handleUpdateMember} className="p-6 space-y-4">
+                        <form onSubmit={handleUpdateMember} className="p-8 space-y-5">
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Member Name</label>
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1 font-mono">Full Name</label>
                                 <input
                                     required
                                     type="text"
-                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                    className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-4 text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold placeholder-slate-400 shadow-inner"
                                     value={editData.name}
                                     onChange={e => setEditData({ ...editData, name: e.target.value })}
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Email (Optional)</label>
-                                <input
-                                    type="email"
-                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                    placeholder="e.g. name@example.com"
-                                    value={editData.email}
-                                    onChange={e => setEditData({ ...editData, email: e.target.value })}
-                                />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1 font-mono">Dues Rate</label>
+                                    <input
+                                        required
+                                        type="number"
+                                        className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-4 text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold shadow-inner"
+                                        value={editData.subscriptionAmount}
+                                        onChange={e => setEditData({ ...editData, subscriptionAmount: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1 font-mono">Cycle</label>
+                                    <select
+                                        className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-4 text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold shadow-inner appearance-none"
+                                        value={editData.subscriptionType}
+                                        onChange={e => setEditData({ ...editData, subscriptionType: e.target.value })}
+                                    >
+                                        <option>Monthly</option>
+                                        <option>Yearly</option>
+                                        <option>One-Time</option>
+                                    </select>
+                                </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Phone Number</label>
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1 font-mono">Phone Line</label>
                                 <input
                                     required
                                     type="tel"
-                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                    className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-2xl px-4 py-4 text-slate-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-bold shadow-inner"
                                     value={editData.phone}
                                     onChange={e => setEditData({ ...editData, phone: e.target.value })}
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Fee Amount</label>
-                                <input
-                                    required
-                                    type="number"
-                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                    value={editData.subscriptionAmount}
-                                    onChange={e => setEditData({ ...editData, subscriptionAmount: e.target.value })}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Cycle</label>
-                                <select
-                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 appearance-none"
-                                    value={editData.subscriptionType}
-                                    onChange={e => setEditData({ ...editData, subscriptionType: e.target.value })}
-                                >
-                                    <option>Monthly</option>
-                                    <option>Yearly</option>
-                                    <option>One-Time</option>
-                                </select>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Join Date</label>
-                                <input
-                                    required
-                                    type="date"
-                                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                    value={editData.joinDate}
-                                    onChange={e => setEditData({ ...editData, joinDate: e.target.value })}
-                                />
-                            </div>
                             <button
                                 type="submit"
-                                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-blue-900/40 active:scale-95 transition-all flex items-center justify-center space-x-2 mt-4"
+                                className="w-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black py-5 rounded-[1.8rem] shadow-[0_20px_40px_-10px_rgba(37,99,235,0.4)] active:scale-95 transition-all flex items-center justify-center space-x-3 mt-6"
                             >
-                                <Save size={20} />
-                                <span>Save Changes</span>
+                                <Save size={20} className="opacity-80" />
+                                <span className="uppercase tracking-widest text-xs">Save Changes</span>
                             </button>
                         </form>
                     </div>
@@ -536,9 +567,9 @@ export default function MemberDetails() {
 
             {/* Payment Confirmation Modal */}
             {isPaymentModalOpen && selectedMonthDate && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={() => setIsPaymentModalOpen(false)}></div>
-                    <div className="bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden relative z-10 shadow-2xl animate-in zoom-in duration-300">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-500" onClick={() => setIsPaymentModalOpen(false)}></div>
+                    <div className="glass-dark w-full max-w-sm rounded-[3rem] overflow-hidden relative z-10 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-300">
                         <div className="p-8 pb-4 text-center relative">
                             {selectedMonthStatus === 'partial' && paymentToRevert && (
                                 <button
@@ -546,40 +577,31 @@ export default function MemberDetails() {
                                         setIsPaymentModalOpen(false);
                                         setIsRevertModalOpen(true);
                                     }}
-                                    className="absolute top-6 right-6 p-3 bg-rose-50 text-rose-500 rounded-2xl hover:bg-rose-100 transition-all active:scale-90 border border-rose-100"
-                                    title="Revert to Unpaid"
+                                    className="absolute top-8 right-8 p-3 bg-white dark:bg-slate-900 text-rose-500 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all border border-slate-200 dark:border-white/5 shadow-sm active:scale-90"
                                 >
                                     <Trash2 size={18} />
                                 </button>
                             )}
-                            <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <CreditCard className="text-blue-500" size={32} />
+                            <div className="w-20 h-20 bg-blue-50 dark:bg-blue-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner ring-8 ring-blue-500/5">
+                                <CreditCard className="text-blue-600 dark:text-blue-400" size={32} />
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 tracking-tight">
-                                {selectedMonthStatus === 'partial' ? 'Settle Payment' : 'Record Payment'}
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                                {selectedMonthStatus === 'partial' ? 'Clear Arrears' : 'Payment Portal'}
                             </h3>
-                            <p className="text-slate-500 font-medium mt-1">
-                                {selectedMonthStatus === 'partial'
-                                    ? `This month is partially paid. Enter the balance for ${format(selectedMonthDate, 'MMMM yyyy')}.`
-                                    : `Choose payment type for ${format(selectedMonthDate, 'MMMM yyyy')}`
-                                }
+                            <p className="text-slate-400 text-sm font-bold mt-2 uppercase tracking-wide">
+                                {format(selectedMonthDate, 'MMMM yyyy')}
                             </p>
                         </div>
 
-                        <div className="p-8 pt-2 space-y-3">
+                        <div className="p-8 pt-4 space-y-4">
                             {selectedMonthStatus !== 'partial' && (
                                 <button
                                     onClick={() => handlePostPayment(member.subscriptionAmount, true)}
-                                    className="w-full bg-emerald-600 text-white p-6 rounded-2xl flex items-center justify-between group active:scale-95 transition-all text-left shadow-lg shadow-emerald-100"
+                                    className="w-full bg-gradient-to-br from-emerald-500 to-green-600 text-white p-6 rounded-3xl flex flex-col items-center group active:scale-95 transition-all text-center shadow-[0_20px_40px_-10px_rgba(16,185,129,0.3)] border-none"
                                 >
-                                    <div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-emerald-200">Standard Fee</p>
-                                        <p className="text-xl font-black">Full Payment</p>
-                                        <p className="text-xs font-bold text-emerald-200 mt-1">₹{member.subscriptionAmount}</p>
-                                    </div>
-                                    <div className="p-2 bg-emerald-500 rounded-xl text-white shadow-lg">
-                                        <CheckCircle2 size={20} />
-                                    </div>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100 mb-1">Standard Payment</p>
+                                    <p className="text-xl font-black">Full Payment</p>
+                                    <p className="text-xs font-bold text-white mt-2 bg-white/20 px-3 py-1 rounded-full border border-white/20">₹{parseFloat(member.subscriptionAmount).toLocaleString()}</p>
                                 </button>
                             )}
 
@@ -588,27 +610,22 @@ export default function MemberDetails() {
                                     setIsPaymentModalOpen(false);
                                     setIsCustomAmountModalOpen(true);
                                 }}
-                                className="w-full bg-blue-50 text-blue-700 p-6 rounded-2xl flex items-center justify-between group active:scale-95 transition-all text-left border-2 border-blue-100"
+                                className="premium-card w-full border-2 border-dashed dark:border-white/10 p-6 flex flex-col items-center group active:scale-95 transition-all text-center group bg-white/50 dark:bg-white/5"
                             >
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">
-                                        {selectedMonthStatus === 'partial' ? 'Complete Payment' : 'Reduce Balance'}
-                                    </p>
-                                    <p className="text-xl font-black">
-                                        {selectedMonthStatus === 'partial' ? 'Pay Remaining' : 'Partial Payment'}
-                                    </p>
-                                    <p className="text-xs font-bold text-blue-400 mt-1">Enter custom amount</p>
-                                </div>
-                                <div className="p-2 bg-blue-600 rounded-xl text-white shadow-lg shadow-blue-200">
-                                    <ArrowRight size={20} />
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-1">Flexible Mode</p>
+                                <p className="text-xl font-black text-slate-900 dark:text-white">
+                                    {selectedMonthStatus === 'partial' ? 'Pay Remaining' : 'Other Amount'}
+                                </p>
+                                <div className="p-1.5 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-lg mt-3 group-hover:scale-110 transition-transform">
+                                    <ArrowRight size={16} />
                                 </div>
                             </button>
 
                             <button
                                 onClick={() => setIsPaymentModalOpen(false)}
-                                className="w-full py-4 text-slate-400 font-bold hover:text-slate-600 transition-colors mt-2"
+                                className="w-full py-4 text-slate-500 dark:text-slate-400 font-black uppercase text-[10px] tracking-[0.3em] hover:text-slate-700 dark:hover:text-white transition-colors mt-2"
                             >
-                                Maybe Later
+                                Cancel
                             </button>
                         </div>
                     </div>
@@ -672,45 +689,33 @@ export default function MemberDetails() {
                 </div>
             )}
 
-            {/* Revert/Delete Payment Modal */}
+            {/* Revert Modal */}
             {isRevertModalOpen && paymentToRevert && (
-                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-md" onClick={() => setIsRevertModalOpen(false)}></div>
-                    <div className="bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden relative z-10 shadow-2xl animate-in zoom-in duration-300">
-                        <div className="p-8 pb-4 text-center">
-                            <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Trash2 className="text-rose-500" size={30} />
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-500" onClick={() => setIsRevertModalOpen(false)}></div>
+                    <div className="glass-dark w-full max-w-sm rounded-[2.5rem] overflow-hidden relative z-10 shadow-2xl animate-in zoom-in-95 duration-300">
+                        <div className="p-8 text-center">
+                            <div className="w-16 h-16 bg-rose-50 dark:bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-rose-500">
+                                <AlertCircle size={32} />
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 tracking-tight">Delete Payment?</h3>
-                            <p className="text-slate-500 font-medium mt-1">
-                                {paymentToRevert.forMonth !== undefined
-                                    ? `Remove payment for ${paymentToRevert.forMonth} ${paymentToRevert.forYear}?`
-                                    : 'Remove this general payment record?'
-                                }
+                            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Revert Ledger?</h3>
+                            <p className="text-slate-400 text-sm font-bold mt-2 leading-relaxed">
+                                Decouple this transaction (₹{paymentToRevert.amount}) from member history? This action is semi-permanent.
                             </p>
-
-                            <div className="mt-6 p-5 bg-slate-50 rounded-2xl border-2 border-slate-100/50">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Transaction to Delete</p>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm font-bold text-slate-600">Monthly Fee</span>
-                                    <span className="text-lg font-black text-slate-900">₹{paymentToRevert.amount}</span>
-                                </div>
+                            <div className="mt-8 space-y-3">
+                                <button
+                                    onClick={handleConfirmRevert}
+                                    className="w-full bg-rose-500 text-white font-black py-4 rounded-2xl shadow-lg shadow-rose-500/20 active:scale-95 transition-all uppercase tracking-widest text-[10px]"
+                                >
+                                    Confirm Deletion
+                                </button>
+                                <button
+                                    onClick={() => setIsRevertModalOpen(false)}
+                                    className="w-full py-4 text-slate-400 font-bold text-[10px] uppercase tracking-widest"
+                                >
+                                    Go Back
+                                </button>
                             </div>
-                        </div>
-
-                        <div className="p-8 pt-0 grid grid-cols-2 gap-3">
-                            <button
-                                onClick={() => setIsRevertModalOpen(false)}
-                                className="py-4 text-slate-500 font-bold hover:bg-slate-50 rounded-2xl transition-all"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleConfirmRevert}
-                                className="bg-rose-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-rose-200 active:scale-95 transition-all"
-                            >
-                                Yes, Remove
-                            </button>
                         </div>
                     </div>
                 </div>
