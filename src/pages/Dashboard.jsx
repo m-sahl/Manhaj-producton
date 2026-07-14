@@ -13,7 +13,7 @@ const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
         <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full opacity-10 ${color}`}></div>
         <div className="flex justify-between items-start relative z-10">
             <div>
-                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">{title}</p>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-1">{title}</p>
                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{value}</h3>
                 {subtext && <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">{subtext}</p>}
             </div>
@@ -67,7 +67,7 @@ export default function Dashboard() {
             {stats.pendingMembers.length > 0 && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-200">
                     <div className="flex items-center justify-between px-1">
-                        <h2 className="text-sm font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 font-mono">
+                        <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                             Outstanding Dues
                         </h2>
                         <Link to="/members" className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline">
@@ -91,7 +91,7 @@ export default function Dashboard() {
                                     </div>
                                     <div>
                                         <p className="text-sm font-black text-slate-900 dark:text-white leading-none">{member.name}</p>
-                                        <p className="text-[10px] text-slate-500 mt-1 font-bold">ID: {member._id.slice(0, 6)}</p>
+                                        <p className="text-xs text-slate-400 mt-0.5">{member.unpaidMonthsCount} month{member.unpaidMonthsCount !== 1 ? 's' : ''} due</p>
                                     </div>
                                 </div>
 

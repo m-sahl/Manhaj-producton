@@ -240,7 +240,7 @@ export default function Reports() {
 
             {/* List */}
             <div className="space-y-4">
-                <h3 className="text-slate-500 dark:text-slate-400 text-sm uppercase tracking-wider font-bold">Recent Transactions</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Recent Transactions</h3>
 
                 {filtered.length === 0 ? (
                     <div className="text-center py-10 text-slate-500">No records found for this period.</div>
@@ -277,13 +277,13 @@ export default function Reports() {
             </div>
             {/* Download Modal */}
             {showDownloadModal && (
-                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4">
+                <div className="fixed inset-0 z-[100] flex items-end justify-center">
                     <div
                         className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
                         onClick={() => setShowDownloadModal(false)}
                     ></div>
 
-                    <div className="relative bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in fade-in slide-in-from-bottom-10 duration-300">
+                    <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-t-3xl p-6 pb-8 shadow-2xl border-t border-slate-200 dark:border-slate-800 animate-in slide-in-from-bottom duration-300 z-10">
                         <div className="flex justify-between items-center mb-6">
                             <div>
                                 <h2 className="text-xl font-black text-slate-900 dark:text-white">Download Report</h2>

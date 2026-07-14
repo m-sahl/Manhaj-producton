@@ -20,7 +20,7 @@ export default function Settings() {
             </div>
 
             {/* Appearance Section */}
-            <section className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700/50">
+            <section className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/50">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                         <div className="p-3 bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl">

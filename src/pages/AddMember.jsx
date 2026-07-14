@@ -54,7 +54,7 @@ export default function AddMember() {
             <form onSubmit={handleSubmit} className="space-y-4">
 
                 <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold ml-1">Full Name</label>
+                    <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide ml-1">Full Name</label>
                     <input
                         required
                         type="text"
@@ -67,7 +67,7 @@ export default function AddMember() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold ml-1">Phone Number</label>
+                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide ml-1">Phone Number</label>
                         <input
                             required
                             type="tel"
@@ -78,7 +78,7 @@ export default function AddMember() {
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold ml-1">Join Date</label>
+                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide ml-1">Join Date</label>
                         <input
                             required
                             type="date"
@@ -91,7 +91,7 @@ export default function AddMember() {
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold ml-1">Fee Amount</label>
+                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide ml-1">Fee Amount</label>
                         <input
                             required
                             type="number"
@@ -101,7 +101,7 @@ export default function AddMember() {
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold ml-1">Cycle</label>
+                        <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide ml-1">Cycle</label>
                         <select
                             className="w-full bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium appearance-none shadow-sm dark:shadow-none"
                             value={formData.subscriptionType}
@@ -115,7 +115,7 @@ export default function AddMember() {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold ml-1 text-orange-500 dark:text-orange-400">Initial Pending Dues</label>
+                    <label className="text-xs font-semibold uppercase tracking-wide ml-1 text-orange-500 dark:text-orange-400">Initial Pending Dues</label>
                     <input
                         type="number"
                         className="w-full bg-orange-50 dark:bg-orange-500/10 border border-orange-200 dark:border-orange-500/30 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all font-medium shadow-sm dark:shadow-none placeholder-orange-300 dark:placeholder-orange-500/50"

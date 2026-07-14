@@ -47,38 +47,33 @@ export default function Layout() {
 
             {/* Bottom Navigation */}
             <nav className="fixed bottom-0 left-0 right-0 glass-dark border-t border-slate-200/50 dark:border-white/5 pb-safe z-50">
-                <div className="flex justify-around items-center max-w-md mx-auto w-full h-[72px]">
-                    <NavLink
-                        to="/"
-                        className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 transition-all ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'}`}
-                    >
-                        <LayoutDashboard size={22} className={location.pathname === '/' ? 'scale-110' : ''} />
-                        <span className="text-[10px] font-black uppercase tracking-tighter">Home</span>
-                    </NavLink>
-
-                    <NavLink
-                        to="/members"
-                        className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 transition-all ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'}`}
-                    >
-                        <Users size={22} className={location.pathname === '/members' ? 'scale-110' : ''} />
-                        <span className="text-[10px] font-black uppercase tracking-tighter">Directory</span>
-                    </NavLink>
-
-                    <NavLink
-                        to="/reports"
-                        className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 transition-all ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'}`}
-                    >
-                        <FileText size={22} className={location.pathname === '/reports' ? 'scale-110' : ''} />
-                        <span className="text-[10px] font-black uppercase tracking-tighter">Reports</span>
-                    </NavLink>
-
-                    <NavLink
-                        to="/settings"
-                        className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 transition-all ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'}`}
-                    >
-                        <Settings size={22} className={location.pathname === '/settings' ? 'scale-110' : ''} />
-                        <span className="text-[10px] font-black uppercase tracking-tighter">Settings</span>
-                    </NavLink>
+                <div className="flex justify-around items-center max-w-md mx-auto w-full h-[68px]">
+                    {[
+                        { to: '/', icon: LayoutDashboard, label: 'Home', exact: true },
+                        { to: '/members', icon: Users, label: 'Directory', exact: true },
+                        { to: '/reports', icon: FileText, label: 'Reports', exact: true },
+                        { to: '/settings', icon: Settings, label: 'Settings', exact: true },
+                    ].map(({ to, icon: Icon, label }) => {
+                        const isActive = to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
+                        return (
+                            <NavLink
+                                key={to}
+                                to={to}
+                                className="flex flex-col items-center justify-center w-full h-full gap-1 transition-all"
+                            >
+                                <div className={`flex items-center justify-center px-5 py-1 rounded-full transition-all duration-200 ${isActive ? 'bg-blue-100 dark:bg-blue-500/20' : ''}`}>
+                                    <Icon
+                                        size={20}
+                                        className={isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}
+                                        strokeWidth={isActive ? 2.5 : 1.8}
+                                    />
+                                </div>
+                                <span className={`text-[10px] font-semibold tracking-wide transition-all ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                                    {label}
+                                </span>
+                            </NavLink>
+                        );
+                    })}
                 </div>
             </nav>
         </div>
