@@ -199,7 +199,7 @@ export default function Reports() {
 
 
     return (
-        <div className="animate-fade-in space-y-6 pb-20">
+        <div className="animate-fade-in space-y-6 pb-20 max-w-md mx-auto px-1">
             {/* Filters */}
             <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                 {['day', 'month', 'all'].map(f => (

@@ -22,7 +22,7 @@ export default function Layout() {
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-sans flex flex-col transition-colors duration-300">
             {/* Unified Header */}
             <header className="glass sticky top-0 z-50 border-b border-slate-200 dark:border-white/5">
-                <div className="px-5 py-4 flex justify-between items-center max-w-lg mx-auto w-full">
+                <div className="px-5 py-4 flex justify-between items-center max-w-md mx-auto w-full">
                     <div className="flex items-center space-x-3">
                         {showBackButton && (
                             <button onClick={() => navigate(-1)} className="p-2 -ml-2 active:scale-95 rounded-2xl transition-all text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5">
@@ -40,14 +40,14 @@ export default function Layout() {
 
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto pb-24">
-                <div className="max-w-lg mx-auto w-full p-4">
+                <div className="max-w-md mx-auto w-full p-4">
                     <Outlet />
                 </div>
             </main>
 
             {/* Bottom Navigation */}
             <nav className="fixed bottom-0 left-0 right-0 glass-dark border-t border-slate-200/50 dark:border-white/5 pb-safe z-50">
-                <div className="flex justify-around items-center max-w-lg mx-auto w-full h-[72px]">
+                <div className="flex justify-around items-center max-w-md mx-auto w-full h-[72px]">
                     <NavLink
                         to="/"
                         className={({ isActive }) => `flex flex-col items-center justify-center w-full h-full space-y-1 transition-all ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'}`}

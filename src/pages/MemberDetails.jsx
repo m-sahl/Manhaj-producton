@@ -235,7 +235,7 @@ export default function MemberDetails() {
     const monthWiseHistory = payments.filter(p => p.forMonth !== undefined);
 
     return (
-        <div className="animate-fade-in space-y-6 pb-24 relative min-h-[90vh]">
+        <div className="animate-fade-in space-y-6 pb-24 relative min-h-[90vh] max-w-md mx-auto px-1">
             {/* Profile Header & Actions */}
             <div className="flex flex-col space-y-6">
                 <div className="flex items-center justify-between px-1">

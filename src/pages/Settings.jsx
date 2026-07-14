@@ -13,7 +13,7 @@ export default function Settings() {
     };
 
     return (
-        <div className="animate-fade-in space-y-6 pb-24">
+        <div className="animate-fade-in space-y-6 pb-24 max-w-md mx-auto px-1">
             {/* Header */}
             <div className="flex items-center space-x-4 mb-6">
                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Settings</h2>

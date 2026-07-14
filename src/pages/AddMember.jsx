@@ -37,7 +37,7 @@ export default function AddMember() {
     };
 
     return (
-        <div className="animate-fade-in relative min-h-[80vh] space-y-6">
+        <div className="animate-fade-in relative min-h-[80vh] space-y-6 max-w-md mx-auto px-1">
             <div className="flex items-center space-x-4 mb-2">
                 <button
                     onClick={() => navigate(-1)}
