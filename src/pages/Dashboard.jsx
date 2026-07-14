@@ -1,25 +1,9 @@
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { calculateMemberStats } from '../utils/stats';
-import { Users, AlertCircle, Plus, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Users, Plus, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import RevenueChart from '../components/RevenueChart';
-
-const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
-    <div className="w-full text-left bg-white dark:bg-slate-800/50 backdrop-blur-md p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm dark:shadow-none relative overflow-hidden">
-        <div className={`absolute -right-4 -top-4 w-20 h-20 rounded-full opacity-10 ${color}`}></div>
-        <div className="flex justify-between items-start relative z-10">
-            <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-1">{title}</p>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white">{value}</h3>
-                {subtext && <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">{subtext}</p>}
-            </div>
-            <div className={`p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900/50 ${color.replace('bg-', 'text-')}`}>
-                <Icon size={18} />
-            </div>
-        </div>
-    </div>
-);
 
 export default function Dashboard() {
     const membersData = useQuery(api.members.list);
@@ -44,26 +28,39 @@ export default function Dashboard() {
     return (
         <div className="space-y-5 animate-fade-in pb-10 max-w-md mx-auto px-1">
 
-            {/* #4 — Three stat cards */}
-            <div className="grid grid-cols-3 gap-3">
-                <StatCard
-                    title="Members"
-                    value={stats.totalMembers}
-                    icon={Users}
-                    color="bg-blue-600"
-                />
-                <StatCard
-                    title="Paid Up"
-                    value={stats.paidUp}
-                    icon={CheckCircle2}
-                    color="bg-emerald-500"
-                />
-                <StatCard
-                    title="Dues"
-                    value={`₹${(stats.totalPending / 1000).toFixed(1)}k`}
-                    icon={AlertCircle}
-                    color="bg-rose-500"
-                />
+            {/* Stat cards — primary wide + two below */}
+            <div className="space-y-3">
+                {/* Primary card — Members */}
+                <div className="w-full bg-blue-600 p-5 rounded-2xl relative overflow-hidden">
+                    <div className="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10"></div>
+                    <div className="absolute -right-2 -bottom-6 w-20 h-20 rounded-full bg-white/5"></div>
+                    <div className="flex justify-between items-center relative z-10">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-blue-200 mb-1">Total Members</p>
+                            <h3 className="text-4xl font-bold text-white">{stats.totalMembers}</h3>
+                            <p className="text-xs text-blue-200 mt-1">{stats.paidUp} paid · {stats.totalMembers - stats.paidUp} with dues</p>
+                        </div>
+                        <div className="p-3 rounded-xl bg-white/20">
+                            <Users size={24} className="text-white" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Secondary row */}
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white dark:bg-slate-800/60 border border-slate-100 dark:border-white/5 p-4 rounded-2xl relative overflow-hidden">
+                        <div className="absolute -right-3 -top-3 w-14 h-14 rounded-full bg-emerald-500/10"></div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-1">Paid Up</p>
+                        <h3 className="text-2xl font-bold text-emerald-500">{stats.paidUp}</h3>
+                        <p className="text-xs text-slate-400 mt-1">members</p>
+                    </div>
+                    <div className="bg-white dark:bg-slate-800/60 border border-slate-100 dark:border-white/5 p-4 rounded-2xl relative overflow-hidden">
+                        <div className="absolute -right-3 -top-3 w-14 h-14 rounded-full bg-rose-500/10"></div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 mb-1">Total Dues</p>
+                        <h3 className="text-2xl font-bold text-rose-500">₹{(stats.totalPending / 1000).toFixed(1)}k</h3>
+                        <p className="text-xs text-slate-400 mt-1">outstanding</p>
+                    </div>
+                </div>
             </div>
 
             {/* #5 — Revenue chart with period selector inside */}
