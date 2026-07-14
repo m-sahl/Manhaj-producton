@@ -33,7 +33,7 @@ export default function Dashboard() {
     const pendingMembers = members
         .filter(m => m.balance > 0)
         .sort((a, b) => b.balance - a.balance)
-        .slice(0, 3);
+        .slice(2, 3);
 
     const stats = {
         totalMembers: members.length,
