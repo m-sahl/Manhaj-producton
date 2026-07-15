@@ -6,6 +6,7 @@ import AddMember from './pages/AddMember';
 import MemberDetails from './pages/MemberDetails';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import Landing from './pages/Landing';
 import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -15,8 +16,10 @@ function App() {
       <ToastProvider>
         <Router>
           <Routes>
+            <Route path="/landing" element={<Landing />} />
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
+              <Route path="dashboard" element={<Dashboard />} />
               <Route path="members" element={<Members />} />
               <Route path="members/add" element={<AddMember />} />
               <Route path="members/:id" element={<MemberDetails />} />
@@ -30,5 +33,7 @@ function App() {
     </ThemeProvider>
   );
 }
+
+export default App;
 
 export default App;
