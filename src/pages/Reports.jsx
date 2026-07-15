@@ -214,27 +214,34 @@ export default function Reports() {
             </div>
 
             {/* Summary Card */}
-            <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl p-6 shadow-xl relative overflow-hidden group">
+            <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl p-5 shadow-xl relative overflow-hidden">
                 <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
-
                 <div className="flex justify-between items-start relative z-10">
                     <div>
-                        <p className="text-violet-200 text-sm font-medium mb-1 flex items-center space-x-2">
-                            <TrendingUp size={16} />
-                            <span>Total Collected ({filter === 'day' ? 'Today' : filter === 'month' ? format(new Date(), 'MMMM') : 'Total'})</span>
+                        <p className="text-violet-200 text-xs font-semibold mb-1 flex items-center gap-2">
+                            <TrendingUp size={14} />
+                            <span>Total Collected ({filter === 'day' ? 'Today' : filter === 'month' ? format(new Date(), 'MMMM') : 'All Time'})</span>
                         </p>
-                        <h2 className="text-4xl font-bold text-white mb-2">₹{total.toLocaleString()}</h2>
-                        <p className="text-violet-200 text-xs">{filtered.length} transactions found</p>
+                        <h2 className="text-3xl font-bold text-white mb-1">₹{total.toLocaleString()}</h2>
+                        <p className="text-violet-200 text-xs">{filtered.length} transactions</p>
                     </div>
-
                     <button
                         onClick={() => setShowDownloadModal(true)}
-                        className="bg-white/20 hover:bg-white/30 p-3 rounded-xl text-white transition-all active:scale-90 border border-white/10 flex items-center space-x-2"
-                        title="Download Report"
+                        className="flex items-center gap-1.5 bg-white/20 px-3 py-2 rounded-xl text-white text-xs font-semibold active:scale-90 transition-all border border-white/20"
                     >
-                        <Download size={20} />
-                        <span className="text-xs font-black uppercase tracking-tighter hidden md:inline">Download PDF</span>
+                        <Download size={15} />
+                        PDF
                     </button>
+                </div>
+
+                {/* Filter tabs */}
+                <div className="flex gap-2 mt-4 relative z-10">
+                    {[{ id: 'day', label: 'Today' }, { id: 'month', label: 'This Month' }, { id: 'all', label: 'All Time' }].map(f => (
+                        <button key={f.id} onClick={() => setFilter(f.id)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${filter === f.id ? 'bg-white text-indigo-600' : 'bg-white/10 text-violet-200'}`}>
+                            {f.label}
+                        </button>
+                    ))}
                 </div>
             </div>
 
